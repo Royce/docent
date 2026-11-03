@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { everythingElse, isSliceReviewed, noDiffReason, reviewKeys } from './progress';
+import { everythingElse, isPureMove, isSliceReviewed, noDiffReason, reviewKeys } from './progress';
 
 const hunks = (n: number) => () => Array.from({ length: n }, (_, index) => ({ index }));
 
@@ -39,5 +39,14 @@ describe('noDiffReason', () => {
 		expect(noDiffReason({ status: 'modified', additions: 3, deletions: 1 })).toMatch(/too big/);
 		expect(noDiffReason({ status: 'renamed', additions: 0, deletions: 0, previous_filename: 'old.ts' })).toBe('Moved from old.ts, with no changes');
 		expect(noDiffReason({ status: 'added', additions: 0, deletions: 0 })).toMatch(/binary or empty/);
+	});
+});
+
+describe('isPureMove', () => {
+	const moved = { status: 'renamed', previous_filename: 'old/a.ts', additions: 0, deletions: 0 };
+	it('is a rename with no changes', () => {
+		expect(isPureMove(moved)).toBe(true);
+		expect(isPureMove({ ...moved, additions: 1, deletions: 1, patch: '@@ -1 +1 @@\n-a\n+b' })).toBe(false);
+		expect(isPureMove({ ...moved, status: 'modified' })).toBe(false);
 	});
 });

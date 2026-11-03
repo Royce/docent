@@ -21,6 +21,11 @@ export function reviewKeys(
 	);
 }
 
+// A file moved with no changes to it.
+export function isPureMove(file: { status: string; additions: number; deletions: number; patch?: string; previous_filename?: string }): boolean {
+	return file.status === 'renamed' && !!file.previous_filename && !file.patch && !file.additions && !file.deletions;
+}
+
 // Why a file read whole has no diff to show.
 export function noDiffReason(file: { status: string; additions: number; deletions: number; previous_filename?: string }): string {
 	if (file.additions + file.deletions) return `Couldn't load this diff: +${file.additions} −${file.deletions}, too big to show here`;

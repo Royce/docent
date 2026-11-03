@@ -21,6 +21,7 @@
 	let {
 		file,
 		note,
+		routine,
 		collapsed = $bindable(),
 		counts,
 		summary,
@@ -32,6 +33,8 @@
 	}: {
 		file: PrFile;
 		note?: FileNote;
+		// A routine change's one line, said open or closed.
+		routine?: string;
 		collapsed: boolean;
 		counts: { added: number; removed: number };
 		// A closed file's one marker; see DiffFile.
@@ -46,6 +49,8 @@
 	} = $props();
 
 	const session = useSession();
+	// The routine line as plain text, for its tooltip and the file's name.
+	const routinePlain = $derived(routine?.replace(/`|\*\*/g, ''));
 	// GitHub threads on the file with no lines here: outdated, or on the whole file.
 	const githubThreads = $derived(looseGitHubThreads(session.githubInReading, file.filename));
 
@@ -66,7 +71,13 @@
 </script>
 
 <header>
-	<button class="toggle name" aria-expanded={!collapsed} title={file.filename} onclick={() => (collapsed = !collapsed)}>
+	<button
+		class="toggle name"
+		aria-expanded={!collapsed}
+		aria-label={routinePlain ? `${file.filename} - ${routinePlain}` : undefined}
+		title={file.filename}
+		onclick={() => (collapsed = !collapsed)}
+	>
 		<Icon name="chevron" class="chevron" turned={!collapsed} />
 		<span class="path"><FilePath path={file.filename} /></span>
 	</button>
@@ -80,8 +91,10 @@
 	{/if}
 	<!-- The rest of the header opens and closes the file too. -->
 	<button class="toggle rest" tabindex="-1" aria-hidden="true" onclick={() => (collapsed = !collapsed)}>
-		<span class="gist faint"
-			>{#if note?.note && collapsed}<InlineText text={`${note.kind === 'tests' ? 'Tests · ' : ''}${note.note.replace(/^- /, '').split('\n')[0]}`} />{/if}</span
+		<span class="gist faint" class:routine title={routinePlain}
+			>{#if routine}<InlineText text={routine} />{:else if note?.note && collapsed}<InlineText
+					text={`${note.kind === 'tests' ? 'Tests · ' : ''}${note.note.replace(/^- /, '').split('\n')[0]}`}
+				/>{/if}</span
 		>
 		<span class="stat"><span class="plus">+{counts.added}</span> <span class="minus">−{counts.removed}</span></span>
 	</button>
@@ -245,6 +258,10 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	/* In place of the diff, so it reads a little stronger. */
+	.gist.routine {
+		color: var(--muted);
 	}
 	.stat {
 		font-family: var(--mono);

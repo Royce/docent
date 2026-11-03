@@ -130,7 +130,13 @@
 					<FoldAll {allOpen} onfold={(open) => (fold = { open, at: Date.now(), slice: slice.id })} />
 					<p class="hint faint">Drag down the line numbers to select lines.</p>
 				</div>
-				<FileDiffs bind:allOpen keys={slice.hunks} notes={session.record.fileNotes?.[slice.id] ?? []} fold={fold?.slice === slice.id ? fold : null} />
+				<FileDiffs
+					bind:allOpen
+					keys={slice.hunks}
+					notes={session.record.fileNotes?.[slice.id] ?? []}
+					gatherRoutine
+					fold={fold?.slice === slice.id ? fold : null}
+				/>
 			{/key}
 
 			<div class="finish">

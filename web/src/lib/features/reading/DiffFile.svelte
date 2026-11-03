@@ -48,6 +48,7 @@
 		hunkIndices = null,
 		marks = [],
 		note,
+		routine,
 		prRef,
 		whitespace = false,
 		reviewed = false,
@@ -63,6 +64,8 @@
 		hunkIndices?: number[] | null;
 		marks?: Mark[];
 		note?: FileNote;
+		// A routine change, in one line: the file starts closed, saying it.
+		routine?: string;
 		prRef: PrRef;
 		// Show whitespace-only changes as changes.
 		whitespace?: boolean;
@@ -442,8 +445,15 @@
 		return at.length > 4 ? `${at.slice(0, 4).join(', ')}, …` : at.join(', ');
 	}
 
-	// Reviewed files start closed, and close when marked reviewed.
-	let collapsed = $state(untrack(() => reviewed));
+	// Reviewed files start closed, and close when marked reviewed; so do
+	// routine ones, whose one line says all they need to - unless something
+	// sits on them, a finding or a thread, which is then worth seeing.
+	const markedHere = () =>
+		marks.some((m) => !m.filtered && shownIndices.has(homeOf(m)?.index ?? -1)) ||
+		wholeFile.some((m) => !m.filtered) ||
+		fileThreads.length > 0 ||
+		looseGitHubThreads(session.githubInReading, file.filename).length > 0;
+	let collapsed = $state(untrack(() => reviewed || (!!routine && !markedHere())));
 
 	$effect(() => {
 		if (fold) collapsed = !fold.open;
@@ -585,6 +595,7 @@
 	<FileHeader
 		{file}
 		{note}
+		{routine}
 		bind:collapsed
 		counts={sliceCounts ?? { added: file.additions, removed: file.deletions }}
 		{summary}

@@ -80,6 +80,10 @@ export interface FileNote {
 	scenarioLines?: number[];
 	// Code only worth skimming - imports, test setup - as new-file lines.
 	quietRanges?: { kind: 'imports' | 'setup'; startLine: number; endLine: number }[];
+	// A change with nothing in it to check - an import repointed, a rename
+	// carried through, a file deleted whose code moved - in one line. The
+	// slice shows the file closed, with this in place of its diff.
+	routine?: string;
 }
 
 export interface FeedbackItem {

@@ -16,8 +16,14 @@
 			return keys.length && keys.every((k) => session.reviewed[k]);
 		}).length
 	);
-	// Every file's notes, whichever slice they were written for.
-	const notes = $derived(Object.values(session.record.fileNotes ?? {}).flat());
+	// Every file's notes, whichever slice they were written for. A routine
+	// line is only about its slice's part of a file, so one with nothing
+	// else is left out, not to stand in for another slice's note.
+	const notes = $derived(
+		Object.values(session.record.fileNotes ?? {})
+			.flat()
+			.filter((n) => n.note || n.scenarioLines || n.quietRanges)
+	);
 </script>
 
 <div class="page">

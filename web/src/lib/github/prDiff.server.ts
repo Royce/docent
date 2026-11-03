@@ -17,10 +17,12 @@ export const WHOLE_DIFF_LIMIT = 120_000;
 
 // For a range of commits, only the hunks it touched, unless asked for others.
 export function numberedFileDiff(file: PrFile, hunkIndices = file.inRange): string {
-	if (!file.patch) return `${file.filename} (${file.status}, no text diff)`;
+	// A moved file says where from, so its change can be read as a move.
+	const status = file.previous_filename ? `${file.status} from ${file.previous_filename}` : file.status;
+	if (!file.patch) return `${file.filename} (${status}, no text diff)`;
 	const hunks = parseFilePatch(file.patch);
 	const shown = hunkIndices ? hunkIndices.map((i) => hunks[i]).filter(Boolean) : hunks;
-	return `${file.filename} (${file.status})\n${shown.map(numberedHunk).join('\n')}`;
+	return `${file.filename} (${status})\n${shown.map(numberedHunk).join('\n')}`;
 }
 
 // New-file lines that appear in a file's diff (added or unchanged context):
