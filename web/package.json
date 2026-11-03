@@ -6,6 +6,10 @@
 	"engines": {
 		"node": ">=22.13"
 	},
+	"portless": {
+		"name": "docent",
+		"appPort": 17321
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",

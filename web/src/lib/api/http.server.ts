@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { DEFAULT_REVIEWER, REVIEWER_RE } from '../features/panel/agentReviews.server.js';
+import { isLocalHost } from './localHost.js';
 import { rememberMcpUrl } from './mcpUrl.server.js';
 
 // What Docent's API routes share: checking a PR's owner, repo and number,
@@ -17,13 +18,19 @@ export const notFound = (error: string) => json({ error }, { status: 404 });
 export const noContent = () => new Response(null, { status: 204 });
 export const forbidden = (error: string) => json({ error }, { status: 403 });
 
-const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
-
 // Whether a request is from Docent's own page on this machine, for the
 // routes that save or run a command: another site can POST here without a
 // preflight, and a domain rebound to this machine brings its own Host and
-// Origin.
-export const fromThisApp = (request: Request, url: URL) => LOCAL_HOSTS.includes(url.hostname) && request.headers.get('origin') === url.origin;
+// Origin. The page's host is matched but not its scheme, since a local https
+// proxy such as portless hands the server plain http.
+export function fromThisApp(request: Request, url: URL): boolean {
+	if (!isLocalHost(url.hostname)) return false;
+	try {
+		return new URL(request.headers.get('origin') ?? '').host === url.host;
+	} catch {
+		return false;
+	}
+}
 
 // A failure from GitHub or a model, reported to the page.
 export const failed = (err: unknown) => json({ error: (err as Error).message }, { status: 502 });

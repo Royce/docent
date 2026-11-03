@@ -25,6 +25,8 @@ cd web && npm install && npm run dev    # http://localhost:17321
 
 Open http://localhost:17321 and paste a GitHub PR URL. To run a built copy instead: `npm run build && npm start`, on the same port. Set `DOCENT_PORT` to use another one.
 
+With [portless](https://github.com/vercel-labs/portless), run `portless` in `web` instead, for https://docent.localhost. Docent still listens on port 17321, so agents connected over MCP keep working.
+
 ## Reviewing a PR
 
 A review moves through four steps, shown along the top:
